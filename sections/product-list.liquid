@@ -1,7 +1,11 @@
-
+{% comment %}
+  Merchant-selected product list. The optional table-only mode guards the New arrivals collection.
+  @example On the homepage, select New arrivals and enable Only table product pages.
+{% endcomment %}
 
 {% liquid
   assign max_items = section.settings.max_products
+  assign rendered_items = 0
   if section.settings.background_color != blank
     render 'contrast-override', background_color: section.settings.background_color, section_id: section.id
   endif
@@ -33,6 +37,12 @@
     {% if section.settings.collection != blank and shop.products_count != 0 %}
       {% paginate section.settings.collection.products by max_items %}
         {% for product in section.settings.collection.products limit: max_items %}
+          {% if section.settings.table_products_only %}
+            {% unless product.template_suffix == 'range-order' and product.metafields.custom.order_table_collection.value != blank and product.metafields.custom.show_in_new_arrivals.value == true %}
+              {% continue %}
+            {% endunless %}
+          {% endif %}
+          {% if rendered_items > 0 %}<!--@list/split-->{% endif %}
         <div
           class="resource-list__item"
         >
@@ -44,12 +54,10 @@
             %}
           </div>
 
-          {% unless forloop.last %}
-            <!--@list/split-->
-          {% endunless %}
+          {% assign rendered_items = rendered_items | plus: 1 %}
         {% endfor %}
       {% endpaginate %}
-    {% else %}
+    {% elsif section.settings.table_products_only != true %}
       {% for i in (1..max_items) %}
         <div
           class="resource-list__item"
@@ -60,6 +68,7 @@
         {% unless forloop.last %}
           <!--@list/split-->
         {% endunless %}
+        {% assign rendered_items = rendered_items | plus: 1 %}
       {% endfor %}
     {% endif %}
   {% endcapture %}
@@ -69,14 +78,18 @@
     assign list_items_array = list_items | strip | split: '<!--@list/split-->'
   %}
 
-  {% render 'resource-list',
+  {% if rendered_items > 0 %}
+    {% render 'resource-list',
     list_items: list_items,
     list_items_array: list_items_array,
     settings: section.settings,
-    slide_count: max_items,
+    slide_count: rendered_items,
     content_type: 'products',
     test_id: 'resource-list-grid'
   %}
+  {% elsif request.design_mode %}
+    <p>{{ 'carpe_order.arrivals_empty' | t }}</p>
+  {% endif %}
 
   <div
     class="section-resource-list__content"
@@ -109,6 +122,13 @@
       "type": "collection",
       "id": "collection",
       "label": "t:settings.collection"
+    },
+    {
+      "type": "checkbox",
+      "id": "table_products_only",
+      "label": "t:carpe_order.table_products_only",
+      "info": "t:carpe_order.table_products_only_info",
+      "default": false
     },
     {
       "type": "select",

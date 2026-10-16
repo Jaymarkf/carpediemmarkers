@@ -1,0 +1,13 @@
+{% comment %}
+  Lightweight tab directory for an ordering collection. No product cards, images or cart data.
+  @example Requested by the ordering component using /collections/handle?view=order-groups.
+{% endcomment %}
+{% layout none %}
+{% paginate collection.products by 250 %}
+  <div data-order-group-index>
+    {% for item in collection.products %}
+      <span data-index-group="{{ item.metafields.custom.quick_order_group.value | strip | escape }}"></span>
+    {% endfor %}
+    {% if paginate.next %}<a data-index-next href="{{ paginate.next.url | escape }}"></a>{% endif %}
+  </div>
+{% endpaginate %}

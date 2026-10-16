@@ -22,6 +22,8 @@
     data-section-id="{{ section.id }}" data-auto-load="{{ section.settings.auto_load }}"
     data-add-url="{{ routes.cart_add_url | append: '.js' }}"
     data-cart-url="{{ routes.cart_url | append: '.js' }}"
+    data-cart-animation="{{ settings.add_to_cart_animation }}"
+    {% if order_source != blank %}data-group-index-url="{{ order_source.url | append: '?view=order-groups' | escape }}"{% endif %}
   >
     <nav class="carpe-order__breadcrumbs" aria-label="{{ 'carpe_order.breadcrumbs' | t | escape }}">
       <a href="{{ routes.root_url }}">{{ 'carpe_order.home' | t }}</a>
@@ -58,6 +60,9 @@
           <div><p class="carpe-order__eyebrow">{{ 'carpe_order.eyebrow' | t }}</p><h2>{{ 'carpe_order.choose_options' | t }}</h2></div>
           <span class="carpe-order__count">{{ 'content.item_count' | t: count: order_source.products_count }}</span>
         </div>
+        <div class="carpe-order__tabs" data-order-tabs role="tablist" aria-label="{{ 'carpe_order.groups' | t | escape }}" on:click="/selectGroup" on:keydown="/groupKeydown" hidden></div>
+        <p class="carpe-order__group-status" data-order-group-status role="status"></p>
+        <button type="button" class="button-secondary carpe-order__group-retry" data-order-group-retry on:click="/loadGroupIndex" hidden>{{ 'carpe_order.retry_groups' | t }}</button>
         <div class="carpe-order__toolbar carpe-order__enhanced">
           <p>{{ 'carpe_order.selected' | t }} <strong data-order-count>0</strong></p>
           <button type="button" class="button-secondary" data-order-clear on:click="/clearSelection">{{ 'carpe_order.clear' | t }}</button>
@@ -66,7 +71,8 @@
           <p class="carpe-order__status" data-order-status role="status"></p>
         </div>
         <p class="carpe-order__scroll-hint" id="CarpeScroll-{{ section.id }}">{{ 'carpe_order.scroll_hint' | t }}</p>
-        <div class="carpe-order__scroll" tabindex="0" role="region" aria-label="{{ 'carpe_order.table_label' | t | escape }}" aria-describedby="CarpeScroll-{{ section.id }}">
+        <p class="carpe-order__group-empty" data-order-group-empty hidden>{{ 'carpe_order.group_pending' | t }}</p>
+        <div class="carpe-order__scroll" id="CarpeTable-{{ section.id }}" tabindex="0" role="region" aria-label="{{ 'carpe_order.table_label' | t | escape }}" aria-describedby="CarpeScroll-{{ section.id }}">
           <table class="carpe-order__table">
             <caption class="visually-hidden">{{ range_resource.title | escape }}</caption>
             <thead><tr>
@@ -104,11 +110,22 @@
         "adding": {{ 'carpe_order.adding' | t | json }},
         "success": {{ 'carpe_order.success' | t | json }},
         "cartError": {{ 'carpe_order.cart_error' | t | json }},
-        "syncError": {{ 'carpe_order.sync_error' | t | json }}
+        "syncError": {{ 'carpe_order.sync_error' | t | json }},
+        "otherGroup": {{ 'carpe_order.other_group' | t | json }},
+        "groupError": {{ 'carpe_order.group_error' | t | json }},
+        "inCartQuantity": {{ 'carpe_order.in_cart_quantity' | t: count: '__count__' | json }}
       }
     </script>
+    <template data-order-flight>
+      <span class="carpe-order-flight__icon">{{ 'icon-cart.svg' | inline_asset_content }}</span>
+      <span class="carpe-order-flight__count" data-order-flight-count></span>
+    </template>
+    <template data-order-success-icon>
+      <span class="carpe-order__success-icon" aria-hidden="true">{{ 'icon-checkmark.svg' | inline_asset_content }}</span>
+    </template>
   </carpe-collection-order-component>
 </div>
+{% render 'fly-to-cart-styles' %}
 {% stylesheet %}
   /* Keep artwork and fade on one surface so neither can end before the other. */
   .carpe-order-background--paper::before {
@@ -158,6 +175,13 @@
   .carpe-order__options-heading h2 { margin: 0; font-size: clamp(1.35rem, 2vw, 1.8rem); letter-spacing: -0.025em; }
   .carpe-order__options-heading .carpe-order__eyebrow { margin-block-end: 5px; }
   .carpe-order__count { flex-shrink: 0; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--carpe-order-border); font-size: 0.75rem; background: var(--color-background); }
+  .carpe-order__tabs { display: flex; gap: 8px; max-inline-size: 100%; min-inline-size: 0; overflow-x: auto; overscroll-behavior-inline: contain; padding-block: 4px 14px; margin-block-end: 10px; scrollbar-width: thin; }
+  .carpe-order__tab { flex: 0 0 auto; min-block-size: 44px; padding: 11px 22px; border: 1px solid var(--carpe-order-border); border-radius: 999px; background: var(--color-background); color: var(--color-foreground); font: inherit; font-size: 0.8rem; cursor: pointer; transition: background-color 180ms ease, color 180ms ease; }
+  .carpe-order__tab[aria-selected='true'] { background: var(--color-primary-button-background); color: var(--color-primary-button-text); border-color: var(--color-primary-button-background); }
+  .carpe-order__tab:focus-visible { outline: 2px solid var(--color-foreground); outline-offset: 2px; }
+  .carpe-order__group-status, .carpe-order__group-empty { font-size: 0.8rem; line-height: 1.5; }
+  .carpe-order__group-status:empty { display: none; }
+  .carpe-order__group-retry { margin-block-end: 16px; }
   .carpe-order__toolbar { position: sticky; inset-block-start: calc(var(--header-height, 80px) + 8px); z-index: 3; display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-block-end: 14px; padding: 14px 18px; background: var(--color-background); border: 1px solid var(--carpe-order-border); border-radius: var(--style-border-radius-md, 12px); box-shadow: 0 10px 30px -22px rgb(var(--color-foreground-rgb) / 0.35); }
   .carpe-order__toolbar > p { margin: 0; }
   .carpe-order__toolbar > p:first-child { display: flex; align-items: center; gap: 10px; margin-inline-end: auto; font-size: 0.78rem; }
@@ -165,6 +189,28 @@
   .carpe-order__toolbar > button { min-height: 44px; padding: 11px 16px; font-size: 0.78rem; }
   .carpe-order__toolbar > a { padding: 10px 6px; font-size: 0.75rem; text-underline-offset: 4px; color: inherit; }
   .carpe-order__status { flex-basis: 100%; font-size: 0.85rem; line-height: 1.5; overflow-wrap: anywhere; }
+  .carpe-order__status[data-success='true'] { display: flex; align-items: center; gap: 10px; }
+  .carpe-order__success-icon { display: inline-grid; place-items: center; flex: 0 0 28px; inline-size: 28px; block-size: 28px; border-radius: 50%; background: var(--color-success); color: white; --icon-stroke-width: 2px; }
+  fly-to-cart.fly-to-cart--order {
+    --width: 56px;
+    --height: 56px;
+    --offset-y: 0px;
+    --x-timing: cubic-bezier(0.35, 0.05, 0.75, 1);
+    --y-timing: cubic-bezier(0.08, 0.7, 0.3, 1.02);
+    --scale-timing: cubic-bezier(0.4, 0, 0.8, 1);
+    --icon-stroke-width: 1.5px;
+    display: grid;
+    place-items: center;
+    padding: 12px;
+    border-radius: 16px;
+    overflow: visible;
+    background: var(--carpe-flight-background);
+    color: var(--carpe-flight-color);
+    box-shadow: 0 10px 28px rgb(0 0 0 / 0.18);
+    animation-duration: 900ms;
+  }
+  .carpe-order-flight__icon, .carpe-order-flight__icon svg { display: block; inline-size: 30px; block-size: 30px; }
+  .carpe-order-flight__count { position: absolute; inset-block-start: -7px; inset-inline-end: -7px; min-inline-size: 25px; block-size: 25px; display: grid; place-items: center; padding-inline: 5px; border: 2px solid var(--carpe-flight-background); border-radius: 999px; background: var(--carpe-flight-color); color: var(--carpe-flight-background); font-family: var(--font-body--family); font-size: 11px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
   .carpe-order__scroll-hint { display: flex; align-items: center; gap: 8px; margin-block: 0 12px; font-size: 0.72rem; color: var(--color-foreground-muted); }
   .carpe-order__scroll-hint::before { content: '↔'; font-size: 1rem; }
   .carpe-order__scroll { position: relative; overflow-x: auto; overscroll-behavior-inline: contain; border: 1px solid var(--carpe-order-border); border-radius: var(--style-border-radius-md, 12px); background: var(--color-background); scrollbar-width: thin; scrollbar-color: rgb(var(--color-foreground-rgb) / 0.25) var(--carpe-order-soft); }
@@ -187,6 +233,11 @@
   .carpe-order__price { white-space: nowrap; font-weight: 650; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
   .carpe-order__price s { display: block; font-size: 0.72rem; font-weight: 400; color: var(--color-foreground-muted); }
   .carpe-order__quantity { display: inline-flex; border: 1px solid var(--color-input-border); border-radius: 8px; overflow: hidden; transition: border-color 160ms ease, box-shadow 160ms ease; }
+  .carpe-order__cart-presence { position: relative; display: flex; inline-size: fit-content; max-inline-size: 100%; margin-block-start: 8px; padding: 5px 9px; border: 1px solid color-mix(in srgb, var(--color-success) 22%, var(--color-background)); border-radius: 999px; color: var(--color-foreground); background: color-mix(in srgb, var(--color-success) 7%, var(--color-background)); font-size: 0.67rem; line-height: 1.35; font-weight: 500; }
+  .carpe-order__cart-presence-visual { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 5px; min-inline-size: 0; overflow-wrap: anywhere; }
+  .carpe-order__cart-presence-visual svg { inline-size: 14px; block-size: 14px; flex-shrink: 0; color: var(--color-success); --icon-stroke-width: 1.6px; }
+  .carpe-order__cart-presence-dot { opacity: 0.55; }
+  .carpe-order__cart-presence bdi { font-weight: 700; font-variant-numeric: tabular-nums; }
   .carpe-order__quantity:focus-within { border-color: var(--color-foreground); box-shadow: 0 0 0 3px rgb(var(--color-foreground-rgb) / 0.06); }
   .carpe-order__quantity :is(button, input) { border: 0; border-radius: 0; color: var(--color-input-text); background: var(--color-input-background); min-height: 44px; }
   .carpe-order__quantity button { width: 44px; padding: 0; cursor: pointer; font-size: 18px; transition: background-color 160ms ease; }
@@ -246,6 +297,7 @@
     .carpe-order__media img { width: 50px; height: 50px; }
   }
   @media (prefers-reduced-motion: reduce) {
+    fly-to-cart.fly-to-cart--order { display: none; animation: none; }
     .carpe-order-section[data-animate='true'] :is(.carpe-order__intro, .carpe-order__options-heading, .carpe-order__table tbody tr) { animation: none; }
     .carpe-order :is(img, a, button, tr, .carpe-order__quantity) { transition: none; }
     .carpe-order__visual:hover .carpe-order__hero, .carpe-order__browse:hover, .carpe-order__pagination a:hover { transform: none; }

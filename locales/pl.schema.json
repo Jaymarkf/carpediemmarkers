@@ -9,6 +9,8 @@
  */
 {
   "carpe_order": {
+    "table_products_only": "Only table product pages",
+    "table_products_only_info": "Use the New arrivals collection. Shows only range-order products with an Ordering table products collection and Show in new arrivals enabled.",
     "background_style": "Background treatment",
     "background_paper": "Drafting paper",
     "background_plain": "Plain",

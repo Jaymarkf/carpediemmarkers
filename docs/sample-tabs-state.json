@@ -1,0 +1,77 @@
+{
+  "store": "x1j8t7-2r.myshopify.com",
+  "marker": "carpe-sample-tabs-v1",
+  "products": [
+    {
+      "id": "gid://shopify/Product/15422300815547",
+      "title": "Birch Dowel 9mm x 300mm sample-tab",
+      "handle": "birch-dowel-9mm-300mm-sample-tab",
+      "variantId": "gid://shopify/ProductVariant/67703586783419",
+      "group": "9mm",
+      "sku": "SAMPLE-TAB-09-300",
+      "price": "1.39"
+    },
+    {
+      "id": "gid://shopify/Product/15422301143227",
+      "title": "Birch Dowel 9mm x 600mm sample-tab",
+      "handle": "birch-dowel-9mm-600mm-sample-tab",
+      "variantId": "gid://shopify/ProductVariant/67703593238715",
+      "group": "9mm",
+      "sku": "SAMPLE-TAB-09-600",
+      "price": "1.69"
+    },
+    {
+      "id": "gid://shopify/Product/15422301470907",
+      "title": "Birch Dowel 12mm x 300mm sample-tab",
+      "handle": "birch-dowel-12mm-300mm-sample-tab",
+      "variantId": "gid://shopify/ProductVariant/67703599956155",
+      "group": "12mm",
+      "sku": "SAMPLE-TAB-12-300",
+      "price": "1.42"
+    },
+    {
+      "id": "gid://shopify/Product/15422301765819",
+      "title": "Birch Dowel 12mm x 600mm sample-tab",
+      "handle": "birch-dowel-12mm-600mm-sample-tab",
+      "variantId": "gid://shopify/ProductVariant/67703606247611",
+      "group": "12mm",
+      "sku": "SAMPLE-TAB-12-600",
+      "price": "1.72"
+    },
+    {
+      "id": "gid://shopify/Product/15422302126267",
+      "title": "Birch Dowel 25mm x 300mm sample-tab",
+      "handle": "birch-dowel-25mm-300mm-sample-tab",
+      "variantId": "gid://shopify/ProductVariant/67703613259963",
+      "group": "25mm",
+      "sku": "SAMPLE-TAB-25-300",
+      "price": "1.55"
+    },
+    {
+      "id": "gid://shopify/Product/15422302257339",
+      "title": "Birch Dowel 25mm x 600mm sample-tab",
+      "handle": "birch-dowel-25mm-600mm-sample-tab",
+      "variantId": "gid://shopify/ProductVariant/67703615881403",
+      "group": "25mm",
+      "sku": "SAMPLE-TAB-25-600",
+      "price": "1.85"
+    }
+  ],
+  "collection": {
+    "id": "gid://shopify/Collection/512628785339",
+    "title": "Ordering items sample-tab",
+    "handle": "ordering-items-sample-tab"
+  },
+  "display": {
+    "id": "gid://shopify/Product/15422302650555",
+    "title": "Dowel size tabs sample-tab",
+    "handle": "dowel-size-tabs-sample-tab",
+    "variantId": "gid://shopify/ProductVariant/67703624859835"
+  },
+  "definitions": [
+    {
+      "key": "quick_order_group",
+      "id": "gid://shopify/MetafieldDefinition/311269294267"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "store": "x1j8t7-2r.myshopify.com",
+  "marker": "carpe-home-arrivals-v1",
+  "definition": {
+    "id": "gid://shopify/MetafieldDefinition/311334273211",
+    "namespace": "custom",
+    "key": "show_in_new_arrivals",
+    "name": "Show in new arrivals"
+  },
+  "collection": {
+    "id": "gid://shopify/Collection/512631931067",
+    "handle": "new-arrivals-table-products",
+    "title": "New arrivals"
+  },
+  "enabledProducts": [
+    {
+      "id": "gid://shopify/Product/15421325050043",
+      "handle": "copic-sketch-markers",
+      "title": "COPIC SKETCH MARKERS"
+    },
+    {
+      "id": "gid://shopify/Product/15421326426299",
+      "handle": "olo-premium-markers-brush",
+      "title": "OLO PREMIUM MARKERS - BRUSH"
+    },
+    {
+      "id": "gid://shopify/Product/15421326459067",
+      "handle": "posca-pc-5m-medium",
+      "title": "PC-05M Medium"
+    }
+  ],
+  "verifiedMembers": [
+    {
+      "id": "gid://shopify/Product/15421326459067",
+      "handle": "posca-pc-5m-medium",
+      "title": "PC-05M Medium"
+    },
+    {
+      "id": "gid://shopify/Product/15421326426299",
+      "handle": "olo-premium-markers-brush",
+      "title": "OLO PREMIUM MARKERS - BRUSH"
+    },
+    {
+      "id": "gid://shopify/Product/15421325050043",
+      "handle": "copic-sketch-markers",
+      "title": "COPIC SKETCH MARKERS"
+    }
+  ]
+}

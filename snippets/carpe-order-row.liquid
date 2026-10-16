@@ -16,8 +16,16 @@
   endif
   assign input_id = 'CarpeQty-' | append: section_id | append: '-' | append: item.id
   assign swatch = item.metafields.custom.swatch_color
+  assign cart_quantity = cart | item_count_for_variant: variant.id
+  if item.variants.size > 1
+    assign cart_quantity = 0
+    assign product_cart_lines = cart.items | where: 'product_id', item.id
+    for cart_line in product_cart_lines
+      assign cart_quantity = cart_quantity | plus: cart_line.quantity
+    endfor
+  endif
 %}
-<tr data-order-row data-product-id="{{ item.id }}">
+<tr data-order-row data-product-id="{{ item.id }}" data-order-group="{{ item.metafields.custom.quick_order_group.value | strip | escape }}">
   {% if show_images %}
     <td class="carpe-order__media">
       {% if swatch.type == 'color' and swatch.value != blank %}
@@ -71,5 +79,17 @@
     {% else %}
       <span>{{ 'products.product.sold_out' | t }}</span>
     {% endif %}
+    <span class="carpe-order__cart-presence" data-order-in-cart
+      {% if item.variants.size == 1 %}data-cart-variant-id="{{ variant.id }}"{% else %}data-cart-product-id="{{ item.id }}"{% endif %}
+      {% if cart_quantity == 0 %}hidden{% endif %}
+    >
+      <span class="carpe-order__cart-presence-visual" aria-hidden="true">
+        {{ 'icon-cart.svg' | inline_asset_content }}
+        <span>{{ 'carpe_order.in_cart' | t }}</span>
+        <span class="carpe-order__cart-presence-dot">&middot;</span>
+        <bdi data-order-cart-count>{{ cart_quantity }}</bdi>
+      </span>
+      <span class="visually-hidden" data-order-cart-label>{{ 'carpe_order.in_cart_quantity' | t: count: cart_quantity }}</span>
+    </span>
   </td>
 </tr>

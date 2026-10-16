@@ -46,7 +46,7 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname === '/order.js') return res.end(read('assets/carpe-collection-order.js'));
   if (url.pathname === '/utilities.js') return res.end('export const requestIdleCallback = (callback) => window.requestIdleCallback(callback);');
   if (url.pathname === '/renderer.js') return res.end('export const sectionRenderer = { async getSectionHTML(id, cache, url, signal) { return (await fetch(url, {signal})).text(); } };');
-  if (url.pathname === '/events.js') return res.end(`export class CartLinesUpdateEvent extends Event {
+  if (url.pathname === '/events.js') return res.end(`export const StandardEvents={cartLinesUpdate:"cart:update"};export class CartLinesUpdateEvent extends Event {
     constructor(options) { super('cart:update', {bubbles:true}); Object.assign(this, options); }
     static createPromise() { let resolve, reject; const promise = new Promise((a,b) => {resolve=a; reject=b;}); return {promise, resolve, reject}; }
     static createCartFromAjaxResponse(cart) { return cart; }

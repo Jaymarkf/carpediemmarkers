@@ -9,6 +9,14 @@
  */
 {
   "carpe_order": {
+    "arrivals_empty": "Enable Show in new arrivals on a table product page, and select the New arrivals collection for this section.",
+    "in_cart": "In cart",
+    "in_cart_quantity": "Already in your cart: {{ count }}",
+    "groups": "Product groups",
+    "other_group": "Other items",
+    "group_pending": "No items from this group are currently displayed.",
+    "group_error": "Additional tabs could not be loaded. You can still order the displayed products or retry.",
+    "retry_groups": "Retry loading tabs",
     "home": "Home",
     "breadcrumbs": "Breadcrumbs",
     "browse_options": "Browse options",

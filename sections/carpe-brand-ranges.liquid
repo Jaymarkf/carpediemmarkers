@@ -3,6 +3,12 @@
   the purchasable stock and prices belong to the linked colors, not the display variant.
   @example Assign collection.product-ranges to the COPIC, OLO and Posca brand collections.
 {% endcomment %}
+{% liquid
+  assign arrivals_collection = false
+  if collection.metafields.custom.order_setup.value == 'carpe-home-arrivals-v1'
+    assign arrivals_collection = true
+  endif
+%}
 <div class="section-background color-{{ section.settings.color_scheme }}"></div>
 <section class="section section--page-width color-{{ section.settings.color_scheme }} carpe-brand">
   <header class="carpe-brand__heading">
@@ -12,6 +18,11 @@
   {% paginate collection.products by 24 %}
     <div class="carpe-brand__grid">
       {% for item in collection.products %}
+        {% if arrivals_collection %}
+          {% unless item.template_suffix == 'range-order' and item.metafields.custom.order_table_collection.value != blank and item.metafields.custom.show_in_new_arrivals.value == true %}
+            {% continue %}
+          {% endunless %}
+        {% endif %}
         {% render 'carpe-range-card', product: item %}
       {% else %}
         <p>{{ 'content.no_products_found' | t }}</p>
