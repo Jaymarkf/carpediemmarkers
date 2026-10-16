@@ -9,11 +9,17 @@
  */
 {
   "carpe_order": {
+    "home": "Home",
+    "breadcrumbs": "Breadcrumbs",
+    "browse_options": "Browse options",
+    "choose_items": "Choose items",
+    "set_quantities": "Set quantities",
+    "choose_options": "Choose your options",
     "eyebrow": "Quick order",
     "introduction": "Choose your quantities, then add all selected products to your cart in one step.",
     "table_label": "Product ordering table",
     "scroll_hint": "Swipe or scroll sideways to see all columns on smaller screens.",
-    "color_image": "Color / Image",
+    "color_image": "Image",
     "sku": "SKU",
     "product": "Product",
     "barcode": "UPC / Barcode",

@@ -9,6 +9,10 @@
  */
 {
   "carpe_order": {
+    "background_style": "Background treatment",
+    "background_paper": "Drafting paper",
+    "background_plain": "Plain",
+    "enable_animation": "Subtle animations",
     "name": "Range ordering table",
     "image": "Range image",
     "image_info": "Uses the product or collection image when no override is selected.",

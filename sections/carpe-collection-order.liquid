@@ -12,31 +12,59 @@
     assign brand_collection = product.metafields.custom.range_brand.value
   endif
   assign hero_image = section.settings.image | default: range_resource.featured_image | default: range_resource.image
+  assign surface = section.settings.background_style | default: 'paper'
 %}
 <script src="{{ 'carpe-collection-order.js' | asset_url }}" type="module" fetchpriority="low"></script>
-<div class="section-background color-{{ section.settings.color_scheme }}"></div>
-<div class="section section--page-width color-{{ section.settings.color_scheme }} carpe-order-section">
+<div class="section-background color-{{ section.settings.color_scheme }} carpe-order-background carpe-order-background--{{ surface }}"{% if surface == 'paper' %} style="--carpe-order-artwork: url('{{ 'carpe-drafting-studio-background.webp' | asset_url }}');"{% endif %}></div>
+<div class="section section--page-width color-{{ section.settings.color_scheme }} carpe-order-section" data-animate="{{ section.settings.enable_animation }}">
   <carpe-collection-order-component
     id="CarpeOrder-{{ section.id }}" class="carpe-order"
     data-section-id="{{ section.id }}" data-auto-load="{{ section.settings.auto_load }}"
     data-add-url="{{ routes.cart_add_url | append: '.js' }}"
     data-cart-url="{{ routes.cart_url | append: '.js' }}"
   >
-    <header class="carpe-order__intro">
+    <nav class="carpe-order__breadcrumbs" aria-label="{{ 'carpe_order.breadcrumbs' | t | escape }}">
+      <a href="{{ routes.root_url }}">{{ 'carpe_order.home' | t }}</a>
+      {% if brand_collection != blank %}<span aria-hidden="true">/</span><a href="{{ brand_collection.url }}">{{ brand_collection.title | escape }}</a>{% endif %}
+      <span aria-hidden="true">/</span><span aria-current="page">{{ range_resource.title | escape }}</span>
+    </nav>
+    <header class="carpe-order__intro{% unless hero_image %} carpe-order__intro--text-only{% endunless %}">
       {% if hero_image %}
-        {{ hero_image | image_url: width: 900 | image_tag: widths: '320, 480, 720, 900', sizes: '(min-width: 750px) 32vw, 90vw', loading: 'eager', class: 'carpe-order__hero' }}
+        <figure class="carpe-order__visual">
+          <div class="carpe-order__image-frame">
+            {{ hero_image | image_url: width: 900 | image_tag: widths: '320, 480, 720, 900', sizes: '(min-width: 990px) 420px, (min-width: 750px) 40vw, 90vw', loading: 'eager', class: 'carpe-order__hero' }}
+          </div>
+          {% if order_source != blank %}<figcaption class="carpe-order__image-caption">{{ 'content.item_count' | t: count: order_source.products_count }}</figcaption>{% endif %}
+        </figure>
       {% endif %}
-      <div>
-        {% if brand_collection != blank %}<a href="{{ brand_collection.url }}">{{ brand_collection.title | escape }}</a>{% endif %}
+      <div class="carpe-order__details">
+        {% if brand_collection != blank %}<a class="carpe-order__brand" href="{{ brand_collection.url }}">{{ brand_collection.title | escape }}</a>{% endif %}
         <p class="carpe-order__eyebrow">{{ 'carpe_order.eyebrow' | t }}</p>
         <h1>{{ range_resource.title | escape }}</h1>
         {% if range_resource.description != blank %}<div class="rte carpe-order__description">{{ range_resource.description }}</div>{% endif %}
-        <p>{{ 'carpe_order.introduction' | t }}</p>
+        <p class="carpe-order__introduction">{{ 'carpe_order.introduction' | t }}</p>
+        {% if order_source.products_count > 0 %}<a class="carpe-order__browse" href="#CarpeOptions-{{ section.id }}">{{ 'carpe_order.browse_options' | t }}<span aria-hidden="true">↘</span></a>{% endif %}
+        <ol class="carpe-order__steps">
+          <li><span aria-hidden="true">01</span>{{ 'carpe_order.choose_items' | t }}</li>
+          <li><span aria-hidden="true">02</span>{{ 'carpe_order.set_quantities' | t }}</li>
+          <li><span aria-hidden="true">03</span>{{ 'carpe_order.add_selected' | t }}</li>
+        </ol>
       </div>
     </header>
     {% if order_source != blank %}
     {% paginate order_source.products by section.settings.products_per_page %}
       {% if order_source.products.size > 0 %}
+        <div class="carpe-order__options-heading" id="CarpeOptions-{{ section.id }}">
+          <div><p class="carpe-order__eyebrow">{{ 'carpe_order.eyebrow' | t }}</p><h2>{{ 'carpe_order.choose_options' | t }}</h2></div>
+          <span class="carpe-order__count">{{ 'content.item_count' | t: count: order_source.products_count }}</span>
+        </div>
+        <div class="carpe-order__toolbar carpe-order__enhanced">
+          <p>{{ 'carpe_order.selected' | t }} <strong data-order-count>0</strong></p>
+          <button type="button" class="button-secondary" data-order-clear on:click="/clearSelection">{{ 'carpe_order.clear' | t }}</button>
+          <button type="button" class="button" data-order-submit on:click="/addSelected" disabled>{{ 'carpe_order.add_selected' | t }}</button>
+          <a href="{{ routes.cart_url }}">{{ 'content.view_cart' | t }}</a>
+          <p class="carpe-order__status" data-order-status role="status"></p>
+        </div>
         <p class="carpe-order__scroll-hint" id="CarpeScroll-{{ section.id }}">{{ 'carpe_order.scroll_hint' | t }}</p>
         <div class="carpe-order__scroll" tabindex="0" role="region" aria-label="{{ 'carpe_order.table_label' | t | escape }}" aria-describedby="CarpeScroll-{{ section.id }}">
           <table class="carpe-order__table">
@@ -61,13 +89,6 @@
           <a data-order-next {% if paginate.next %}href="{{ paginate.next.url }}"{% else %}hidden{% endif %} on:click="/loadMore">{{ 'carpe_order.load_more' | t }}</a>
         </nav>
         <p data-load-status role="status" class="carpe-order__load-status"></p>
-        <div class="carpe-order__toolbar carpe-order__enhanced">
-          <p>{{ 'carpe_order.selected' | t }} <strong data-order-count>0</strong></p>
-          <button type="button" class="button-secondary" data-order-clear on:click="/clearSelection">{{ 'carpe_order.clear' | t }}</button>
-          <button type="button" class="button" data-order-submit on:click="/addSelected" disabled>{{ 'carpe_order.add_selected' | t }}</button>
-          <a href="{{ routes.cart_url }}">{{ 'content.view_cart' | t }}</a>
-          <p class="carpe-order__status" data-order-status role="status"></p>
-        </div>
       {% else %}
         <p>{{ 'content.no_products_found' | t }}</p>
       {% endif %}
@@ -89,55 +110,145 @@
   </carpe-collection-order-component>
 </div>
 {% stylesheet %}
-  .carpe-order-section { padding-block: clamp(24px, 4vw, 64px); }
-  .carpe-order { --carpe-order-border: rgb(var(--color-foreground-rgb) / 0.14); display: block; min-width: 0; }
-  .carpe-order__intro { display: flex; align-items: center; gap: clamp(24px, 4vw, 64px); margin-block-end: 32px; }
-  .carpe-order__intro > div { min-width: 0; flex: 1; }
-  .carpe-order__intro h1 { margin-block: 0 16px; overflow-wrap: anywhere; }
-  .carpe-order__hero { width: 32%; max-height: 360px; object-fit: contain; height: auto; }
-  .carpe-order__eyebrow { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
-  .carpe-order__description { max-width: 70ch; overflow-wrap: anywhere; }
-  .carpe-order__scroll-hint { font-size: 0.85rem; }
-  .carpe-order__scroll { position: relative; overflow-x: auto; overscroll-behavior-inline: contain; border: 1px solid var(--carpe-order-border); border-radius: var(--style-border-radius-inputs, 4px); }
-  .carpe-order__table { border-collapse: collapse; width: 100%; min-width: 780px; text-align: start; font-size: 0.9rem; }
-  .carpe-order__table :is(th, td) { padding: 14px 16px; text-align: start; vertical-align: middle; border-block-end: 1px solid var(--carpe-order-border); }
+  /* Keep artwork and fade on one surface so neither can end before the other. */
+  .carpe-order-background--paper::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    block-size: clamp(650px, 66.667vw, 1100px);
+    max-block-size: 100%;
+    pointer-events: none;
+    background-image: linear-gradient(180deg, rgb(var(--color-background-rgb) / 0.38), rgb(var(--color-background-rgb) / 0.68) 52%, var(--color-background) 96%), var(--carpe-order-artwork);
+    background-position: top center;
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+  .carpe-order-section { padding-block: 24px clamp(40px, 5vw, 80px); }
+  .carpe-order {
+    --carpe-order-border: rgb(var(--color-foreground-rgb) / 0.12);
+    --carpe-order-soft: color-mix(in srgb, var(--color-background) 97%, var(--color-foreground));
+    --carpe-order-radius: var(--style-border-radius-lg, 16px);
+    display: block; min-width: 0; color: var(--color-foreground);
+  }
+  .carpe-order__breadcrumbs { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 0.75rem; margin-block-end: clamp(24px, 3vw, 40px); color: var(--color-foreground-muted); }
+  .carpe-order__breadcrumbs a { color: inherit; text-decoration: none; text-underline-offset: 4px; }
+  .carpe-order__breadcrumbs a:hover { text-decoration: underline; }
+  .carpe-order__breadcrumbs [aria-current] { overflow-wrap: anywhere; }
+  .carpe-order__intro { display: grid; grid-template-columns: minmax(260px, 0.85fr) minmax(0, 1.4fr); align-items: center; gap: clamp(28px, 5vw, 80px); margin-block-end: clamp(36px, 5vw, 64px); }
+  .carpe-order__intro--text-only { grid-template-columns: 1fr; }
+  .carpe-order__visual { position: relative; margin: 0; min-width: 0; }
+  .carpe-order__image-frame { display: grid; place-items: center; aspect-ratio: 1.12; padding: clamp(24px, 4vw, 48px); border: 1px solid var(--carpe-order-border); border-radius: var(--carpe-order-radius); background: var(--carpe-order-soft); box-shadow: 0 18px 50px -38px rgb(var(--color-foreground-rgb) / 0.3); overflow: hidden; }
+  .carpe-order__hero { display: block; width: 100%; height: 100%; max-height: 340px; object-fit: contain; border-radius: var(--style-border-radius-sm, 8px); transition: transform 400ms ease; }
+  .carpe-order__image-caption { position: absolute; inset-block-end: 16px; inset-inline-start: 16px; padding: 7px 12px; border: 1px solid var(--carpe-order-border); border-radius: 999px; font-size: 0.75rem; background: var(--color-background); }
+  .carpe-order__details { min-width: 0; }
+  .carpe-order__brand { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 12px; margin-block-end: 16px; border: 1px solid var(--carpe-order-border); border-radius: 999px; color: inherit; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-decoration: none; }
+  .carpe-order__eyebrow { margin-block: 0 10px; font-size: 0.65rem; line-height: 1.4; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-foreground-muted); }
+  .carpe-order__intro h1 { font-family: var(--font-heading--family); font-size: clamp(1.8rem, 3.2vw, 3rem); line-height: 1.1; letter-spacing: -0.035em; margin-block: 0 20px; overflow-wrap: anywhere; text-wrap: balance; }
+  .carpe-order__description { max-width: 65ch; font-size: 0.95rem; line-height: 1.75; overflow-wrap: anywhere; }
+  .carpe-order__description :first-child { margin-block-start: 0; }
+  .carpe-order__introduction { font-size: 0.85rem; line-height: 1.7; color: var(--color-foreground-muted); max-width: 62ch; margin-block: 14px 20px; }
+  .carpe-order__browse { display: inline-flex; align-items: center; justify-content: space-between; gap: 32px; padding: 13px 18px; min-height: 48px; border-radius: var(--style-border-radius-buttons-primary, 6px); background: var(--color-primary-button-background); color: var(--color-primary-button-text); font-size: 0.82rem; font-weight: 600; text-decoration: none; transition: transform 180ms ease, background-color 180ms ease; }
+  .carpe-order__browse:hover { transform: translateY(-2px); background: var(--color-primary-button-hover-background); color: var(--color-primary-button-hover-text); }
+  .carpe-order__browse span { font-size: 1.1rem; }
+  .carpe-order__steps { display: flex; flex-wrap: wrap; gap: 16px 24px; list-style: none; margin: 28px 0 0; padding: 20px 0 0; border-block-start: 1px solid var(--carpe-order-border); }
+  .carpe-order__steps li { display: inline-flex; align-items: center; gap: 8px; font-size: 0.7rem; }
+  .carpe-order__steps li > span { display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--carpe-order-border); border-radius: 50%; font-size: 0.6rem; font-variant-numeric: tabular-nums; }
+  .carpe-order__options-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-block-end: 20px; scroll-margin-block-start: calc(var(--header-height, 80px) + 24px); }
+  .carpe-order__options-heading h2 { margin: 0; font-size: clamp(1.35rem, 2vw, 1.8rem); letter-spacing: -0.025em; }
+  .carpe-order__options-heading .carpe-order__eyebrow { margin-block-end: 5px; }
+  .carpe-order__count { flex-shrink: 0; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--carpe-order-border); font-size: 0.75rem; background: var(--color-background); }
+  .carpe-order__toolbar { position: sticky; inset-block-start: calc(var(--header-height, 80px) + 8px); z-index: 3; display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-block-end: 14px; padding: 14px 18px; background: var(--color-background); border: 1px solid var(--carpe-order-border); border-radius: var(--style-border-radius-md, 12px); box-shadow: 0 10px 30px -22px rgb(var(--color-foreground-rgb) / 0.35); }
+  .carpe-order__toolbar > p { margin: 0; }
+  .carpe-order__toolbar > p:first-child { display: flex; align-items: center; gap: 10px; margin-inline-end: auto; font-size: 0.78rem; }
+  .carpe-order__toolbar [data-order-count] { display: grid; place-items: center; min-width: 32px; height: 32px; padding-inline: 7px; border-radius: 8px; background: var(--carpe-order-soft); font-size: 1rem; font-variant-numeric: tabular-nums; }
+  .carpe-order__toolbar > button { min-height: 44px; padding: 11px 16px; font-size: 0.78rem; }
+  .carpe-order__toolbar > a { padding: 10px 6px; font-size: 0.75rem; text-underline-offset: 4px; color: inherit; }
+  .carpe-order__status { flex-basis: 100%; font-size: 0.85rem; line-height: 1.5; overflow-wrap: anywhere; }
+  .carpe-order__scroll-hint { display: flex; align-items: center; gap: 8px; margin-block: 0 12px; font-size: 0.72rem; color: var(--color-foreground-muted); }
+  .carpe-order__scroll-hint::before { content: '↔'; font-size: 1rem; }
+  .carpe-order__scroll { position: relative; overflow-x: auto; overscroll-behavior-inline: contain; border: 1px solid var(--carpe-order-border); border-radius: var(--style-border-radius-md, 12px); background: var(--color-background); scrollbar-width: thin; scrollbar-color: rgb(var(--color-foreground-rgb) / 0.25) var(--carpe-order-soft); }
+  .carpe-order__table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 840px; text-align: start; font-size: 0.85rem; }
+  .carpe-order__table :is(th, td) { padding: 16px 18px; text-align: start; vertical-align: middle; border-block-end: 1px solid var(--carpe-order-border); }
   .carpe-order__table thead { background: var(--color-primary-button-background); color: var(--color-primary-button-text); }
-  .carpe-order__table thead th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
-  .carpe-order__table tbody tr:nth-child(even) { background: rgb(var(--color-foreground-rgb) / 0.025); }
-  .carpe-order__table tbody tr:focus-within { background: rgb(var(--color-foreground-rgb) / 0.06); }
+  .carpe-order__table thead th { padding-block: 18px; font-size: 0.63rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; }
+  .carpe-order__table tbody tr { background: var(--color-background); transition: background-color 180ms ease; }
+  .carpe-order__table tbody tr:nth-child(even) { background: var(--carpe-order-soft); }
+  .carpe-order__table tbody tr:focus-within { background: color-mix(in srgb, var(--color-background) 94%, var(--color-foreground)); }
   .carpe-order__table tbody tr:last-child > * { border-block-end: 0; }
   .carpe-order__media { width: 88px; }
-  .carpe-order__media img { width: 64px; height: 64px; object-fit: contain; display: block; }
-  .carpe-order__swatch { display: block; width: 44px; height: 44px; border-radius: 50%; background: var(--carpe-swatch); border: 1px solid var(--color-border); }
-  .carpe-order__code { white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .carpe-order__product { min-width: 220px; max-width: 420px; font-weight: 500; overflow-wrap: anywhere; }
-  .carpe-order__table small { display: block; font-size: 0.75rem; font-weight: 400; margin-block-start: 6px; }
-  .carpe-order__price { white-space: nowrap; font-weight: 600; }
-  .carpe-order__price s { display: block; font-size: 0.8rem; font-weight: 400; opacity: 0.7; }
-  .carpe-order__quantity { display: inline-flex; border: 1px solid var(--color-input-border); border-radius: var(--style-border-radius-inputs, 4px); overflow: hidden; }
+  .carpe-order__media img { display: block; width: 58px; height: 58px; object-fit: contain; border-radius: 6px; }
+  .carpe-order__swatch { display: block; width: 38px; height: 38px; border-radius: 50%; background: var(--carpe-swatch); border: 1px solid var(--carpe-order-border); box-shadow: 0 0 0 4px var(--color-background); }
+  .carpe-order__code { white-space: nowrap; font-size: 0.75rem; font-variant-numeric: tabular-nums; }
+  .carpe-order__product { min-width: 220px; max-width: 420px; font-weight: 500; line-height: 1.5; overflow-wrap: anywhere; }
+  .carpe-order__product a { color: inherit; text-decoration: none; text-underline-offset: 4px; }
+  .carpe-order__product a:hover { text-decoration: underline; }
+  .carpe-order__table small { display: block; font-size: 0.7rem; font-weight: 400; margin-block-start: 6px; }
+  .carpe-order__price { white-space: nowrap; font-weight: 650; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+  .carpe-order__price s { display: block; font-size: 0.72rem; font-weight: 400; color: var(--color-foreground-muted); }
+  .carpe-order__quantity { display: inline-flex; border: 1px solid var(--color-input-border); border-radius: 8px; overflow: hidden; transition: border-color 160ms ease, box-shadow 160ms ease; }
+  .carpe-order__quantity:focus-within { border-color: var(--color-foreground); box-shadow: 0 0 0 3px rgb(var(--color-foreground-rgb) / 0.06); }
   .carpe-order__quantity :is(button, input) { border: 0; border-radius: 0; color: var(--color-input-text); background: var(--color-input-background); min-height: 44px; }
-  .carpe-order__quantity button { width: 44px; padding: 0; cursor: pointer; font-size: 20px; }
-  .carpe-order__quantity input { width: 56px; padding: 4px; text-align: center; font-size: 16px; appearance: textfield; }
+  .carpe-order__quantity button { width: 44px; padding: 0; cursor: pointer; font-size: 18px; transition: background-color 160ms ease; }
+  .carpe-order__quantity button:hover:not(:disabled) { background: color-mix(in srgb, var(--color-input-background) 92%, var(--color-input-text)); }
+  .carpe-order__quantity input { width: 48px; padding: 4px; text-align: center; font-size: 16px; appearance: textfield; font-variant-numeric: tabular-nums; }
   .carpe-order__quantity input::-webkit-inner-spin-button, .carpe-order__quantity input::-webkit-outer-spin-button { appearance: none; margin: 0; }
   .carpe-order__quantity :disabled { opacity: 0.5; cursor: wait; }
   .carpe-order__quantity :focus-visible { outline-offset: -3px; }
-  .carpe-order__pagination { display: flex; justify-content: center; gap: 20px; padding-block: 20px; }
-  .carpe-order__pagination a { padding: 12px 24px; }
+  .carpe-order__pagination { display: flex; justify-content: center; gap: 20px; padding-block: 24px; }
+  .carpe-order__pagination a { padding: 12px 24px; min-height: 44px; border: 1px solid var(--carpe-order-border); border-radius: 999px; background: var(--color-background); color: inherit; font-size: 0.8rem; text-decoration: none; transition: transform 160ms ease, border-color 160ms ease; }
+  .carpe-order__pagination a:hover { border-color: var(--color-foreground); transform: translateY(-2px); }
   .carpe-order__pagination [aria-disabled='true'] { opacity: 0.5; cursor: wait; }
-  .carpe-order__load-status { text-align: center; }
+  .carpe-order__load-status { text-align: center; font-size: 0.85rem; }
   .carpe-order__load-status:empty, .carpe-order__status:empty { display: none; }
-  .carpe-order__toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; padding: 20px; background: var(--color-background); border: 1px solid var(--carpe-order-border); border-radius: var(--style-border-radius-inputs, 4px); }
-  .carpe-order__toolbar > p { margin: 0; }
-  .carpe-order__toolbar > p:first-child { margin-inline-end: auto; }
-  .carpe-order__toolbar > button { min-height: 44px; }
-  .carpe-order__status { flex-basis: 100%; overflow-wrap: anywhere; }
   .carpe-order:not([data-enhanced]) .carpe-order__enhanced, .carpe-order[data-enhanced] .carpe-order__fallback { display: none; }
   .carpe-order [hidden] { display: none; }
+  .carpe-order-section[data-animate='true'] .carpe-order__intro { animation: carpe-order-enter 600ms ease both; }
+  .carpe-order-section[data-animate='true'] .carpe-order__options-heading { animation: carpe-order-enter 600ms 100ms ease both; }
+  .carpe-order-section[data-animate='true'] .carpe-order__table tbody tr { animation: carpe-order-row-enter 280ms ease both; }
+  @keyframes carpe-order-enter { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes carpe-order-row-enter { from { opacity: 0; } to { opacity: 1; } }
+  @media (hover: hover) {
+    .carpe-order__visual:hover .carpe-order__hero { transform: scale(1.035); }
+    .carpe-order__table tbody tr:hover { background: color-mix(in srgb, var(--color-background) 94%, var(--color-foreground)); }
+  }
+  @media (max-width: 989px) {
+    .carpe-order__steps { gap: 12px; }
+    .carpe-order__steps li { font-size: 0.65rem; }
+    .carpe-order__intro h1 { font-size: clamp(1.8rem, 3.8vw, 2.5rem); }
+  }
   @media (max-width: 749px) {
-    .carpe-order__intro { flex-direction: column; align-items: stretch; }
-    .carpe-order__hero { width: 100%; max-height: 240px; }
-    .carpe-order__toolbar { padding: 16px; gap: 12px; }
-    .carpe-order__toolbar [data-order-submit] { flex-basis: 100%; }
+    .carpe-order-section { padding-block-start: 18px; }
+    .carpe-order__breadcrumbs { font-size: 0.65rem; gap: 7px; margin-block-end: 22px; }
+    .carpe-order__breadcrumbs [aria-current] { max-width: 52%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .carpe-order__intro { grid-template-columns: 1fr; gap: 24px; margin-block-end: 32px; }
+    .carpe-order__image-frame { aspect-ratio: 1.45; padding: 24px 44px; max-height: 290px; }
+    .carpe-order__hero { max-height: 190px; }
+    .carpe-order__brand { margin-block-end: 12px; }
+    .carpe-order__intro h1 { font-size: clamp(1.7rem, 7.2vw, 2.3rem); margin-block-end: 14px; text-wrap: initial; }
+    .carpe-order__description { font-size: 0.86rem; line-height: 1.65; }
+    .carpe-order__introduction { font-size: 0.8rem; }
+    .carpe-order__steps { padding-block-start: 16px; margin-block-start: 20px; gap: 10px 16px; }
+    .carpe-order__steps li { font-size: 0.63rem; }
+    .carpe-order__steps li > span { width: 20px; height: 20px; }
+    .carpe-order__toolbar { gap: 8px 12px; padding: 12px; }
+    .carpe-order__toolbar > p:first-child { font-size: 0.7rem; gap: 6px; }
+    .carpe-order__toolbar [data-order-clear] { margin-inline-start: auto; padding-inline: 8px; font-size: 0.7rem; }
+    .carpe-order__toolbar [data-order-submit] { order: 2; flex-basis: 100%; }
+    .carpe-order__toolbar > a { padding-inline: 0; font-size: 0.7rem; }
+    .carpe-order__status { order: 3; }
+    .carpe-order__table { min-width: 820px; }
+    .carpe-order__table :is(th, td) { padding: 12px; }
+    .carpe-order__table :is(th, td):last-child { position: sticky; inset-inline-end: 0; }
+    .carpe-order__table thead th:last-child { background: var(--color-primary-button-background); z-index: 2; }
+    .carpe-order__table tbody td:last-child { background: var(--color-background); z-index: 1; box-shadow: -6px 0 12px -10px rgb(var(--color-foreground-rgb) / 0.3); }
+    .carpe-order__media { width: 76px; }
+    .carpe-order__media img { width: 50px; height: 50px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .carpe-order-section[data-animate='true'] :is(.carpe-order__intro, .carpe-order__options-heading, .carpe-order__table tbody tr) { animation: none; }
+    .carpe-order :is(img, a, button, tr, .carpe-order__quantity) { transition: none; }
+    .carpe-order__visual:hover .carpe-order__hero, .carpe-order__browse:hover, .carpe-order__pagination a:hover { transform: none; }
   }
 {% endstylesheet %}
 {% schema %}
@@ -150,7 +261,9 @@
     { "type": "range", "id": "products_per_page", "label": "t:carpe_order.page_size", "min": 12, "max": 48, "step": 12, "default": 24 },
     { "type": "checkbox", "id": "auto_load", "label": "t:carpe_order.auto_load", "default": true },
     { "type": "checkbox", "id": "show_images", "label": "t:carpe_order.show_images", "default": true },
-    { "type": "checkbox", "id": "show_barcode", "label": "t:carpe_order.show_barcode", "default": true }
+    { "type": "checkbox", "id": "show_barcode", "label": "t:carpe_order.show_barcode", "default": true },
+    { "type": "select", "id": "background_style", "label": "t:carpe_order.background_style", "options": [ { "value": "paper", "label": "t:carpe_order.background_paper" }, { "value": "plain", "label": "t:carpe_order.background_plain" } ], "default": "paper" },
+    { "type": "checkbox", "id": "enable_animation", "label": "t:carpe_order.enable_animation", "default": true }
   ]
 }
 {% endschema %}
