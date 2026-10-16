@@ -1,0 +1,169 @@
+{
+  "store": "x1j8t7-2r.myshopify.com",
+  "marker": "carpe-sample-ranges-v1",
+  "publicationId": "gid://shopify/Publication/227524051131",
+  "ranges": [
+    {
+      "key": "copic-sketch",
+      "tag": "range-copic-sketch",
+      "count": 33,
+      "title": "COPIC SKETCH MARKERS",
+      "productId": "gid://shopify/Product/15421325050043",
+      "productHandle": "copic-sketch-markers",
+      "displayVariantId": "gid://shopify/ProductVariant/67696487760059",
+      "brandId": "gid://shopify/Collection/512548012219",
+      "brandHandle": "copic",
+      "rowsId": "gid://shopify/Collection/512547979451",
+      "rowsHandle": "ordering-rows-copic-sketch"
+    },
+    {
+      "key": "olo-brush",
+      "tag": "range-olo-brush",
+      "count": 34,
+      "title": "OLO PREMIUM MARKERS - BRUSH",
+      "productId": "gid://shopify/Product/15421326426299",
+      "productHandle": "olo-premium-markers-brush",
+      "displayVariantId": "gid://shopify/ProductVariant/67696490971323",
+      "brandId": "gid://shopify/Collection/512548077755",
+      "brandHandle": "olo",
+      "rowsId": "gid://shopify/Collection/512548044987",
+      "rowsHandle": "ordering-rows-olo-brush"
+    },
+    {
+      "key": "posca-pc-5m",
+      "tag": "range-posca-pc-5m",
+      "count": 33,
+      "title": "PC-05M Medium",
+      "productId": "gid://shopify/Product/15421326459067",
+      "productHandle": "posca-pc-5m-medium",
+      "displayVariantId": "gid://shopify/ProductVariant/67696491167931",
+      "brandId": "gid://shopify/Collection/512548143291",
+      "brandHandle": "posca",
+      "rowsId": "gid://shopify/Collection/512548110523",
+      "rowsHandle": "ordering-rows-posca-pc-5m"
+    }
+  ],
+  "created": [
+    {
+      "type": "collection",
+      "id": "gid://shopify/Collection/512548012219",
+      "handle": "copic"
+    },
+    {
+      "type": "collection",
+      "id": "gid://shopify/Collection/512548044987",
+      "handle": "ordering-rows-olo-brush"
+    },
+    {
+      "type": "product",
+      "id": "gid://shopify/Product/15421326426299",
+      "handle": "olo-premium-markers-brush"
+    },
+    {
+      "type": "collection",
+      "id": "gid://shopify/Collection/512548077755",
+      "handle": "olo"
+    },
+    {
+      "type": "collection",
+      "id": "gid://shopify/Collection/512548110523",
+      "handle": "ordering-rows-posca-pc-5m"
+    },
+    {
+      "type": "product",
+      "id": "gid://shopify/Product/15421326459067",
+      "handle": "posca-pc-5m-medium"
+    },
+    {
+      "type": "collection",
+      "id": "gid://shopify/Collection/512548143291",
+      "handle": "posca"
+    },
+    {
+      "type": "collection",
+      "id": "gid://shopify/Collection/512548208827",
+      "handle": "see-all-manufacturers"
+    },
+    {
+      "type": "menu",
+      "id": "gid://shopify/Menu/263772078267",
+      "handle": "carpe-range-preview"
+    }
+  ],
+  "menu": {
+    "id": "gid://shopify/Menu/263772078267",
+    "title": "Carpediem - sample range navigation",
+    "handle": "carpe-range-preview",
+    "items": [
+      {
+        "title": "Home",
+        "type": "FRONTPAGE",
+        "url": "/",
+        "resourceId": null,
+        "items": []
+      },
+      {
+        "title": "SEE ALL MANUFACTURERS",
+        "type": "COLLECTION",
+        "url": "/collections/see-all-manufacturers",
+        "resourceId": "gid://shopify/Collection/512548208827",
+        "items": [
+          {
+            "title": "COPIC",
+            "type": "COLLECTION",
+            "url": "/collections/copic",
+            "resourceId": "gid://shopify/Collection/512548012219",
+            "items": [
+              {
+                "title": "COPIC SKETCH MARKERS",
+                "type": "PRODUCT",
+                "url": "/products/copic-sketch-markers",
+                "resourceId": "gid://shopify/Product/15421325050043"
+              }
+            ]
+          },
+          {
+            "title": "OLO",
+            "type": "COLLECTION",
+            "url": "/collections/olo",
+            "resourceId": "gid://shopify/Collection/512548077755",
+            "items": [
+              {
+                "title": "OLO PREMIUM MARKERS - BRUSH",
+                "type": "PRODUCT",
+                "url": "/products/olo-premium-markers-brush",
+                "resourceId": "gid://shopify/Product/15421326426299"
+              }
+            ]
+          },
+          {
+            "title": "Posca",
+            "type": "COLLECTION",
+            "url": "/collections/posca",
+            "resourceId": "gid://shopify/Collection/512548143291",
+            "items": [
+              {
+                "title": "PC-05M Medium",
+                "type": "PRODUCT",
+                "url": "/products/posca-pc-5m-medium",
+                "resourceId": "gid://shopify/Product/15421326459067"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Contact",
+        "type": "PAGE",
+        "url": "/pages/contact",
+        "resourceId": "gid://shopify/Page/166604669115",
+        "items": []
+      }
+    ]
+  },
+  "manufacturers": {
+    "id": "gid://shopify/Collection/512548208827",
+    "title": "See All Manufacturers",
+    "handle": "see-all-manufacturers"
+  }
+}

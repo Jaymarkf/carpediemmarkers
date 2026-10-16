@@ -1,0 +1,15 @@
+{
+  "sections": {
+    "main": {
+      "type": "carpe-collection-order",
+      "settings": {
+        "products_per_page": 24,
+        "auto_load": true,
+        "show_images": true,
+        "show_barcode": true,
+        "color_scheme": "scheme-1"
+      }
+    }
+  },
+  "order": ["main"]
+}

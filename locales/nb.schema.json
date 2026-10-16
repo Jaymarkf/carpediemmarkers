@@ -8,6 +8,16 @@
  * ------------------------------------------------------------
  */
 {
+  "carpe_order": {
+    "name": "Range ordering table",
+    "image": "Range image",
+    "image_info": "Uses the product or collection image when no override is selected.",
+    "color_scheme": "Color scheme",
+    "page_size": "Products loaded at a time",
+    "auto_load": "Load more products when scrolling to the end",
+    "show_images": "Show product images or color swatches",
+    "show_barcode": "Show UPC / barcode column"
+  },
   "names": {
     "404": "404",
     "colors": "Fargepalett",

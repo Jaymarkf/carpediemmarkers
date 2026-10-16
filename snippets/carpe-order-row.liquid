@@ -1,0 +1,75 @@
+{% doc %}
+  A separately managed product presented as one quick-order row.
+  Multi-variant and subscription-only products link to their product page.
+  @param {product} item - Collection product
+  @param {string} section_id - Owning section ID
+  @param {boolean} show_images - Show product images or optional color swatches
+  @param {boolean} show_barcode - Show the variant barcode column
+  @example
+  {% render 'carpe-order-row', item: product, section_id: section.id, show_images: true, show_barcode: true %}
+{% enddoc %}
+{% liquid
+  assign variant = item.selected_or_first_available_variant
+  assign can_order = false
+  if item.variants.size == 1 and item.available and item.requires_selling_plan == false
+    assign can_order = true
+  endif
+  assign input_id = 'CarpeQty-' | append: section_id | append: '-' | append: item.id
+  assign swatch = item.metafields.custom.swatch_color
+%}
+<tr data-order-row data-product-id="{{ item.id }}">
+  {% if show_images %}
+    <td class="carpe-order__media">
+      {% if swatch.type == 'color' and swatch.value != blank %}
+        <span class="carpe-order__swatch" style="--carpe-swatch: {{ swatch.value | escape }}" aria-hidden="true"></span>
+      {% elsif item.featured_image %}
+        {{ item.featured_image | image_url: width: 144 | image_tag: loading: 'lazy', widths: '72, 144', sizes: '64px', alt: '' }}
+      {% else %}
+        <span aria-hidden="true">—</span>
+      {% endif %}
+    </td>
+  {% endif %}
+  <td class="carpe-order__code">{{ variant.sku | default: '—' | escape }}</td>
+  <th scope="row" class="carpe-order__product">
+    <a href="{{ item.url }}">{{ item.title | escape }}</a>
+    {% unless item.available %}<small>{{ 'products.product.sold_out' | t }}</small>{% endunless %}
+  </th>
+  {% if show_barcode %}<td class="carpe-order__code">{{ variant.barcode | default: '—' | escape }}</td>{% endif %}
+  <td class="carpe-order__price">
+    {% if item.variants.size == 1 %}
+      {% if variant.compare_at_price > variant.price %}
+        <s><span class="visually-hidden">{{ 'content.price_compare_at' | t }}</span>{% render 'format-price', price: variant.compare_at_price %}</s>
+      {% endif %}
+      <span>{% render 'format-price', price: variant.price %}</span>
+    {% else %}
+      <a href="{{ item.url }}">{{ 'carpe_order.view_options' | t }}</a>
+    {% endif %}
+  </td>
+  <td>
+    {% if can_order %}
+      <div class="carpe-order__quantity carpe-order__enhanced">
+        <button type="button" data-delta="-1" on:click="/adjustQuantity" aria-label="{{ 'accessibility.decrease_quantity' | t | escape }}: {{ item.title | escape }}">−</button>
+        <label for="{{ input_id }}" class="visually-hidden">{{ 'content.quantity' | t }}: {{ item.title | escape }}</label>
+        <input id="{{ input_id }}" type="number" inputmode="numeric" min="0" step="1" value="0"
+          data-order-quantity data-variant-id="{{ variant.id }}"
+          data-min="{{ variant.quantity_rule.min | default: 1 }}"
+          data-step="{{ variant.quantity_rule.increment | default: 1 }}"
+          {% if variant.quantity_rule.max != null %}max="{{ variant.quantity_rule.max }}"{% endif %}
+          on:input="/quantityChanged" autocomplete="off">
+        <button type="button" data-delta="1" on:click="/adjustQuantity" aria-label="{{ 'accessibility.increase_quantity' | t | escape }}: {{ item.title | escape }}">+</button>
+      </div>
+      <a class="carpe-order__fallback" href="{{ item.url }}">{{ 'carpe_order.view_product' | t }}</a>
+      {% if variant.quantity_rule.min > 1 or variant.quantity_rule.increment > 1 or variant.quantity_rule.max != null %}
+        <small class="carpe-order__rules">
+          {{ 'carpe_order.minimum' | t: count: variant.quantity_rule.min }} · {{ 'carpe_order.increment' | t: count: variant.quantity_rule.increment }}
+          {% if variant.quantity_rule.max != null %} · {{ 'carpe_order.maximum' | t: count: variant.quantity_rule.max }}{% endif %}
+        </small>
+      {% endif %}
+      {% if variant.quantity_price_breaks.size > 0 %}<small>{{ 'content.volume_pricing_available' | t }}</small>{% endif %}
+    {% elsif item.available %}
+      <a href="{{ item.url }}">{{ 'carpe_order.view_options' | t }}</a>
+    {% else %}
+      <span>{{ 'products.product.sold_out' | t }}</span>
+    {% endif %}
+  </td>
+</tr>

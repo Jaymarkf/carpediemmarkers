@@ -1,0 +1,156 @@
+{% comment %}
+  Range product page or legacy collection quick-order page for separately stocked products.
+  The initial page is server-rendered; subsequent pages append without replacing selections.
+  @example Assign product.range-order and select custom.order_table_collection on the product.
+{% endcomment %}
+{% liquid
+  assign order_source = collection
+  assign range_resource = collection
+  if request.page_type == 'product'
+    assign range_resource = product
+    assign order_source = product.metafields.custom.order_table_collection.value
+    assign brand_collection = product.metafields.custom.range_brand.value
+  endif
+  assign hero_image = section.settings.image | default: range_resource.featured_image | default: range_resource.image
+%}
+<script src="{{ 'carpe-collection-order.js' | asset_url }}" type="module" fetchpriority="low"></script>
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
+<div class="section section--page-width color-{{ section.settings.color_scheme }} carpe-order-section">
+  <carpe-collection-order-component
+    id="CarpeOrder-{{ section.id }}" class="carpe-order"
+    data-section-id="{{ section.id }}" data-auto-load="{{ section.settings.auto_load }}"
+    data-add-url="{{ routes.cart_add_url | append: '.js' }}"
+    data-cart-url="{{ routes.cart_url | append: '.js' }}"
+  >
+    <header class="carpe-order__intro">
+      {% if hero_image %}
+        {{ hero_image | image_url: width: 900 | image_tag: widths: '320, 480, 720, 900', sizes: '(min-width: 750px) 32vw, 90vw', loading: 'eager', class: 'carpe-order__hero' }}
+      {% endif %}
+      <div>
+        {% if brand_collection != blank %}<a href="{{ brand_collection.url }}">{{ brand_collection.title | escape }}</a>{% endif %}
+        <p class="carpe-order__eyebrow">{{ 'carpe_order.eyebrow' | t }}</p>
+        <h1>{{ range_resource.title | escape }}</h1>
+        {% if range_resource.description != blank %}<div class="rte carpe-order__description">{{ range_resource.description }}</div>{% endif %}
+        <p>{{ 'carpe_order.introduction' | t }}</p>
+      </div>
+    </header>
+    {% if order_source != blank %}
+    {% paginate order_source.products by section.settings.products_per_page %}
+      {% if order_source.products.size > 0 %}
+        <p class="carpe-order__scroll-hint" id="CarpeScroll-{{ section.id }}">{{ 'carpe_order.scroll_hint' | t }}</p>
+        <div class="carpe-order__scroll" tabindex="0" role="region" aria-label="{{ 'carpe_order.table_label' | t | escape }}" aria-describedby="CarpeScroll-{{ section.id }}">
+          <table class="carpe-order__table">
+            <caption class="visually-hidden">{{ range_resource.title | escape }}</caption>
+            <thead><tr>
+              {% if section.settings.show_images %}<th scope="col">{{ 'carpe_order.color_image' | t }}</th>{% endif %}
+              <th scope="col">{{ 'carpe_order.sku' | t }}</th>
+              <th scope="col">{{ 'carpe_order.product' | t }}</th>
+              {% if section.settings.show_barcode %}<th scope="col">{{ 'carpe_order.barcode' | t }}</th>{% endif %}
+              <th scope="col">{{ 'content.price' | t }}</th>
+              <th scope="col">{{ 'content.quantity' | t }}</th>
+            </tr></thead>
+            <tbody data-order-rows>
+              {% for item in order_source.products %}
+                {% render 'carpe-order-row', item: item, section_id: section.id, show_images: section.settings.show_images, show_barcode: section.settings.show_barcode %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <nav class="carpe-order__pagination" aria-label="{{ 'content.pagination.nav_label' | t | escape }}">
+          {% if paginate.previous %}<a href="{{ paginate.previous.url }}">{{ 'content.pagination.previous' | t }}</a>{% endif %}
+          <a data-order-next {% if paginate.next %}href="{{ paginate.next.url }}"{% else %}hidden{% endif %} on:click="/loadMore">{{ 'carpe_order.load_more' | t }}</a>
+        </nav>
+        <p data-load-status role="status" class="carpe-order__load-status"></p>
+        <div class="carpe-order__toolbar carpe-order__enhanced">
+          <p>{{ 'carpe_order.selected' | t }} <strong data-order-count>0</strong></p>
+          <button type="button" class="button-secondary" data-order-clear on:click="/clearSelection">{{ 'carpe_order.clear' | t }}</button>
+          <button type="button" class="button" data-order-submit on:click="/addSelected" disabled>{{ 'carpe_order.add_selected' | t }}</button>
+          <a href="{{ routes.cart_url }}">{{ 'content.view_cart' | t }}</a>
+          <p class="carpe-order__status" data-order-status role="status"></p>
+        </div>
+      {% else %}
+        <p>{{ 'content.no_products_found' | t }}</p>
+      {% endif %}
+    {% endpaginate %}
+    {% else %}
+      <p>{{ 'content.no_products_found' | t }}</p>
+    {% endif %}
+    <script type="application/json" data-order-messages>
+      {
+        "loading": {{ 'carpe_order.loading' | t | json }},
+        "loadError": {{ 'carpe_order.load_error' | t | json }},
+        "invalid": {{ 'carpe_order.invalid_quantity' | t | json }},
+        "adding": {{ 'carpe_order.adding' | t | json }},
+        "success": {{ 'carpe_order.success' | t | json }},
+        "cartError": {{ 'carpe_order.cart_error' | t | json }},
+        "syncError": {{ 'carpe_order.sync_error' | t | json }}
+      }
+    </script>
+  </carpe-collection-order-component>
+</div>
+{% stylesheet %}
+  .carpe-order-section { padding-block: clamp(24px, 4vw, 64px); }
+  .carpe-order { --carpe-order-border: rgb(var(--color-foreground-rgb) / 0.14); display: block; min-width: 0; }
+  .carpe-order__intro { display: flex; align-items: center; gap: clamp(24px, 4vw, 64px); margin-block-end: 32px; }
+  .carpe-order__intro > div { min-width: 0; flex: 1; }
+  .carpe-order__intro h1 { margin-block: 0 16px; overflow-wrap: anywhere; }
+  .carpe-order__hero { width: 32%; max-height: 360px; object-fit: contain; height: auto; }
+  .carpe-order__eyebrow { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+  .carpe-order__description { max-width: 70ch; overflow-wrap: anywhere; }
+  .carpe-order__scroll-hint { font-size: 0.85rem; }
+  .carpe-order__scroll { position: relative; overflow-x: auto; overscroll-behavior-inline: contain; border: 1px solid var(--carpe-order-border); border-radius: var(--style-border-radius-inputs, 4px); }
+  .carpe-order__table { border-collapse: collapse; width: 100%; min-width: 780px; text-align: start; font-size: 0.9rem; }
+  .carpe-order__table :is(th, td) { padding: 14px 16px; text-align: start; vertical-align: middle; border-block-end: 1px solid var(--carpe-order-border); }
+  .carpe-order__table thead { background: var(--color-primary-button-background); color: var(--color-primary-button-text); }
+  .carpe-order__table thead th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+  .carpe-order__table tbody tr:nth-child(even) { background: rgb(var(--color-foreground-rgb) / 0.025); }
+  .carpe-order__table tbody tr:focus-within { background: rgb(var(--color-foreground-rgb) / 0.06); }
+  .carpe-order__table tbody tr:last-child > * { border-block-end: 0; }
+  .carpe-order__media { width: 88px; }
+  .carpe-order__media img { width: 64px; height: 64px; object-fit: contain; display: block; }
+  .carpe-order__swatch { display: block; width: 44px; height: 44px; border-radius: 50%; background: var(--carpe-swatch); border: 1px solid var(--color-border); }
+  .carpe-order__code { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .carpe-order__product { min-width: 220px; max-width: 420px; font-weight: 500; overflow-wrap: anywhere; }
+  .carpe-order__table small { display: block; font-size: 0.75rem; font-weight: 400; margin-block-start: 6px; }
+  .carpe-order__price { white-space: nowrap; font-weight: 600; }
+  .carpe-order__price s { display: block; font-size: 0.8rem; font-weight: 400; opacity: 0.7; }
+  .carpe-order__quantity { display: inline-flex; border: 1px solid var(--color-input-border); border-radius: var(--style-border-radius-inputs, 4px); overflow: hidden; }
+  .carpe-order__quantity :is(button, input) { border: 0; border-radius: 0; color: var(--color-input-text); background: var(--color-input-background); min-height: 44px; }
+  .carpe-order__quantity button { width: 44px; padding: 0; cursor: pointer; font-size: 20px; }
+  .carpe-order__quantity input { width: 56px; padding: 4px; text-align: center; font-size: 16px; appearance: textfield; }
+  .carpe-order__quantity input::-webkit-inner-spin-button, .carpe-order__quantity input::-webkit-outer-spin-button { appearance: none; margin: 0; }
+  .carpe-order__quantity :disabled { opacity: 0.5; cursor: wait; }
+  .carpe-order__quantity :focus-visible { outline-offset: -3px; }
+  .carpe-order__pagination { display: flex; justify-content: center; gap: 20px; padding-block: 20px; }
+  .carpe-order__pagination a { padding: 12px 24px; }
+  .carpe-order__pagination [aria-disabled='true'] { opacity: 0.5; cursor: wait; }
+  .carpe-order__load-status { text-align: center; }
+  .carpe-order__load-status:empty, .carpe-order__status:empty { display: none; }
+  .carpe-order__toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; padding: 20px; background: var(--color-background); border: 1px solid var(--carpe-order-border); border-radius: var(--style-border-radius-inputs, 4px); }
+  .carpe-order__toolbar > p { margin: 0; }
+  .carpe-order__toolbar > p:first-child { margin-inline-end: auto; }
+  .carpe-order__toolbar > button { min-height: 44px; }
+  .carpe-order__status { flex-basis: 100%; overflow-wrap: anywhere; }
+  .carpe-order:not([data-enhanced]) .carpe-order__enhanced, .carpe-order[data-enhanced] .carpe-order__fallback { display: none; }
+  .carpe-order [hidden] { display: none; }
+  @media (max-width: 749px) {
+    .carpe-order__intro { flex-direction: column; align-items: stretch; }
+    .carpe-order__hero { width: 100%; max-height: 240px; }
+    .carpe-order__toolbar { padding: 16px; gap: 12px; }
+    .carpe-order__toolbar [data-order-submit] { flex-basis: 100%; }
+  }
+{% endstylesheet %}
+{% schema %}
+{
+  "name": "t:carpe_order.name",
+  "enabled_on": { "templates": ["collection", "product"] },
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "t:carpe_order.image", "info": "t:carpe_order.image_info" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "t:carpe_order.color_scheme", "default": "scheme-1" },
+    { "type": "range", "id": "products_per_page", "label": "t:carpe_order.page_size", "min": 12, "max": 48, "step": 12, "default": 24 },
+    { "type": "checkbox", "id": "auto_load", "label": "t:carpe_order.auto_load", "default": true },
+    { "type": "checkbox", "id": "show_images", "label": "t:carpe_order.show_images", "default": true },
+    { "type": "checkbox", "id": "show_barcode", "label": "t:carpe_order.show_barcode", "default": true }
+  ]
+}
+{% endschema %}

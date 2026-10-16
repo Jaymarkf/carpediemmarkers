@@ -1,0 +1,6 @@
+{
+  "sections": {
+    "main": { "type": "carpe-brand-ranges", "settings": { "color_scheme": "scheme-1" } }
+  },
+  "order": ["main"]
+}

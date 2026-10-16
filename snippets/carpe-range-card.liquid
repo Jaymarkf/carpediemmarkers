@@ -1,0 +1,25 @@
+{% doc %}
+  A range display product links to its ordering table, never to a placeholder quick-add.
+  Prices and stock are shown for the actual purchasable color products inside the table.
+  @param {product} product - Range display product
+  @param {object} [block] - Owning theme block
+  @example
+  {% render 'carpe-range-card', product: product, block: block %}
+{% enddoc %}
+<a class="carpe-range-card" href="{{ product.url }}" {{ block.shopify_attributes }}>
+  {% if product.featured_image %}
+    {{ product.featured_image | image_url: width: 800 | image_tag: widths: '240, 400, 600, 800', sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw', loading: 'lazy', class: 'carpe-range-card__image', alt: '' }}
+  {% endif %}
+  <span class="carpe-range-card__vendor">{{ product.vendor | escape }}</span>
+  <span class="carpe-range-card__title">{{ product.title | escape }}</span>
+  <span class="carpe-range-card__action">{{ 'carpe_order.view_options' | t }} <span aria-hidden="true">→</span></span>
+</a>
+{% stylesheet %}
+  .carpe-range-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; height: 100%; padding: 20px; border: 1px solid rgb(var(--color-foreground-rgb) / 0.14); border-radius: var(--style-border-radius-inputs, 4px); text-decoration: none; color: var(--color-foreground); background: var(--color-background); }
+  .carpe-range-card__image { width: 100%; aspect-ratio: 1; height: auto; object-fit: contain; }
+  .carpe-range-card__vendor { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .carpe-range-card__title { font-weight: 600; overflow-wrap: anywhere; }
+  .carpe-range-card__action { display: flex; justify-content: space-between; gap: 12px; margin-block-start: auto; padding-block-start: 8px; text-decoration: underline; text-underline-offset: 4px; }
+  .carpe-range-card:hover { border-color: var(--color-foreground); }
+  @media (max-width: 749px) { .carpe-range-card { padding: 12px; } }
+{% endstylesheet %}

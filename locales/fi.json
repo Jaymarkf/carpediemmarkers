@@ -8,6 +8,32 @@
  * ------------------------------------------------------------
  */
 {
+  "carpe_order": {
+    "eyebrow": "Quick order",
+    "introduction": "Choose your quantities, then add all selected products to your cart in one step.",
+    "table_label": "Product ordering table",
+    "scroll_hint": "Swipe or scroll sideways to see all columns on smaller screens.",
+    "color_image": "Color / Image",
+    "sku": "SKU",
+    "product": "Product",
+    "barcode": "UPC / Barcode",
+    "view_product": "View product",
+    "view_options": "Choose options",
+    "minimum": "Min. {{ count }}",
+    "increment": "Steps of {{ count }}",
+    "maximum": "Max. {{ count }}",
+    "load_more": "Load more products",
+    "loading": "Loading more products…",
+    "load_error": "More products could not load. Your quantities are saved on this page. Select Load more products to retry.",
+    "selected": "Units selected:",
+    "clear": "Clear selection",
+    "add_selected": "Add selected to cart",
+    "invalid_quantity": "Enter a whole number that follows this product’s minimum, maximum and quantity steps, or enter 0 to skip it.",
+    "adding": "Adding selected products…",
+    "success": "Your selected products were added to the cart.",
+    "cart_error": "We could not confirm the full order. Your cart may have changed. Open View cart to check it, then Clear selection before trying again.",
+    "sync_error": "Your products were added, but the cart display could not refresh. Open View cart to see them."
+  },
   "blocks": {
     "load_video": "Lataa video: {{ description }}",
     "sold_out": "Loppuunmyyty",

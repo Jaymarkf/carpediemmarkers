@@ -1,0 +1,45 @@
+{% comment %}
+  Brand collection of range display products. Do not offer stock/price filters here:
+  the purchasable stock and prices belong to the linked colors, not the display variant.
+  @example Assign collection.product-ranges to the COPIC, OLO and Posca brand collections.
+{% endcomment %}
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
+<section class="section section--page-width color-{{ section.settings.color_scheme }} carpe-brand">
+  <header class="carpe-brand__heading">
+    <h1>{{ collection.title | escape }}</h1>
+    {% if collection.description != blank %}<div class="rte">{{ collection.description }}</div>{% endif %}
+  </header>
+  {% paginate collection.products by 24 %}
+    <div class="carpe-brand__grid">
+      {% for item in collection.products %}
+        {% render 'carpe-range-card', product: item %}
+      {% else %}
+        <p>{{ 'content.no_products_found' | t }}</p>
+      {% endfor %}
+    </div>
+    {% if paginate.pages > 1 %}
+      <nav class="carpe-brand__pagination" aria-label="{{ 'content.pagination.nav_label' | t | escape }}">
+        {% if paginate.previous %}<a href="{{ paginate.previous.url }}">{{ 'content.pagination.previous' | t }}</a>{% endif %}
+        {% if paginate.next %}<a href="{{ paginate.next.url }}">{{ 'content.pagination.next' | t }}</a>{% endif %}
+      </nav>
+    {% endif %}
+  {% endpaginate %}
+</section>
+{% stylesheet %}
+  .carpe-brand { padding-block: clamp(24px, 4vw, 56px); row-gap: 32px; }
+  .carpe-brand__heading { min-width: 0; }
+  .carpe-brand__heading h1 { margin-block: 0 16px; overflow-wrap: anywhere; }
+  .carpe-brand__heading .rte { max-width: 70ch; }
+  .carpe-brand__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 24px; min-width: 0; }
+  .carpe-brand__pagination { display: flex; justify-content: center; gap: 24px; padding-block: 16px; }
+  @media (max-width: 749px) { .carpe-brand__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } }
+{% endstylesheet %}
+{% schema %}
+{
+  "name": "t:names.collection_container",
+  "enabled_on": { "templates": ["collection"] },
+  "settings": [
+    { "type": "color_scheme", "id": "color_scheme", "label": "t:carpe_order.color_scheme", "default": "scheme-1" }
+  ]
+}
+{% endschema %}

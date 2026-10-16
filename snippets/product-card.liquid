@@ -12,6 +12,9 @@
 
 {% assign block_settings = block.settings %}
 
+{% if product.metafields.custom.order_table_collection != blank %}
+  {% render 'carpe-range-card', product: product, block: block %}
+{% else %}
 {% if request.visual_preview_mode %}
   {% style %}
     product-card[data-product-transition] {
@@ -117,3 +120,4 @@
 </product-card>
 
 {% render 'product-card-styles' %}
+{% endif %}
